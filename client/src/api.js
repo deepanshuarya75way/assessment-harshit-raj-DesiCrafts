@@ -6,6 +6,8 @@ async function request(path, options = {}) {
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(!token && sessionStorage.getItem("desicrafts_session_id")
+        ?{ "x-session-id": sessionStorage.getItem("desicrafts_session_id")} : {}),
       ...options.headers
     },
     ...options
@@ -41,6 +43,9 @@ export function getRelatedProducts(id) {
 
 export function getPersonalizedRecommendations() {
   return request("/recommendations/me");
+}
+export function getAnonymousRecommendations(){
+  return request("/recommendations/anonymous");
 }
 
 export function getReviews(id) {

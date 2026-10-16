@@ -99,6 +99,12 @@ router.get("/:id", async (req, res, next) => {
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
+    await logInteraction({
+      userId: req.user?._id,
+      sessionId: req.headers["x-session-id"],
+      productId: req.params.id,
+      actionType: "view",
+    });
 
     return res.json(product);
   } catch (error) {

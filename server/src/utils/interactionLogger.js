@@ -9,20 +9,32 @@ const actionWeights = {
   review: 3
 };
 
-export async function logInteraction({ userId, productId, actionType, metadata = {} }) {
+export async function logInteraction({ userId, productId, sessionId, actionType, metadata = {} }) {
   const product = await Product.findById(productId).select("mlProductId");
 
   if (!product?.mlProductId) {
     return null;
   }
 
+  let userKey;
+  if (userId){
+    userKey = `U-${userId}`;
+  } else if (sessionId){
+    userKey = `S-${sessionId}`;
+  } else {
+    userKey = null;
+  }
+  if (!userKey){
+    return null;
+  }
+
   return Interaction.create({
-    user: userId || undefined,
-    userKey: userId ? `U-${userId}` : `anon-${productId}`,
+    ...(userId ? { user: userId } : {}),
+    userKey: userKey,
     product: productId,
     mlProductId: product.mlProductId,
     actionType,
-    rating: actionWeights[actionType] || 1,
+    rating: actionWeights[actionType] ?? 1,
     metadata
   });
 }

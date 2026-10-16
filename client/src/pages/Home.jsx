@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getPersonalizedRecommendations, getProducts } from "../api.js";
+import { getPersonalizedRecommendations, getAnonymousRecommendations, getProducts } from "../api.js";
 import ProductCard from "../components/ProductCard.jsx";
 import { fallbackProducts } from "../data/fallbackProducts.js";
 import { useAuth } from "../state/AuthContext.jsx";
@@ -21,13 +21,14 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      setPersonalized([]);
-      return;
-    }
+    const fetchRecommendations = isAuthenticated
+     ? getPersonalizedRecommendations()
+     : getAnonymousRecommendations();
+    fetchRecommendations
+      .then(setPersonalized)
+      .catch(() => setPersonalized([]))
+    },[isAuthenticated]);
 
-    getPersonalizedRecommendations().then(setPersonalized).catch(() => setPersonalized([]));
-  }, [isAuthenticated]);
 
   return (
     <>

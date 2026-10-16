@@ -4,7 +4,8 @@ const interactionSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User"
+      ref: "User",
+      required: false
     },
     userKey: {
       type: String,
@@ -28,7 +29,7 @@ const interactionSchema = new mongoose.Schema(
     },
     rating: {
       type: Number,
-      required: true,
+      required: false,
       min: 1,
       max: 5
     },

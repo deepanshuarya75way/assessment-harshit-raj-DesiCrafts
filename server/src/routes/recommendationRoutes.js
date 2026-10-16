@@ -4,6 +4,8 @@ import Product from "../models/Product.js";
 import User from "../models/User.js";
 import { protect } from "../middleware/auth.js";
 import { getHistoryMlRecommendations } from "../services/recommendationService.js";
+import Interaction from "../models/Interaction.js";
+import { set } from "mongoose";
 
 const router = express.Router();
 
@@ -16,6 +18,40 @@ async function popularFallback(excludeIds = [], limit = 6) {
     .limit(limit)
     .populate("seller", "storeName location verificationStatus");
 }
+router.get("/anonymous", async (req, res, next) => {
+  try{
+    const sessionId = req.headers["x-session-id"];
+    if (!sessionId) {
+      return res.status(400).json({
+        message: "Session ID id required",
+      });
+    }
+    const interactions = await Interaction.find({
+      userKey: `S-${sessionId}`,
+    })
+    .sort({ createdAt: -1})
+    .limit(50)
+    .select("product actionType createdAt");
+  const viewIds = [
+    ...new Set(
+      interactions
+        .filter((item) => item.actionType === "view")
+        .map((item) => item.product,tostring())
+    ),
+  ];
+  const excludeIds = viewIds;
+  const recommendations = await Product.find({
+    status: "active",
+    _id: { $nin: excludeIds},
+  })
+    .sort({ popularity: -1, rating: -1})
+    .limit(6)
+    .populate("seller", "storeName location verificationStatus");
+  return res.json(recommendations);
+  } catch (error){
+    return next(error);
+  }
+});
 
 router.get("/me", protect, async (req, res, next) => {
   try {

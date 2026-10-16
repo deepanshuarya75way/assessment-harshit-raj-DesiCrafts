@@ -7,6 +7,15 @@ import { useAuth } from "../state/AuthContext.jsx";
 import { useCart } from "../state/CartContext.jsx";
 import { formatCurrency } from "../utils/format.js";
 
+const getAnonymousSessionId = () => {
+  let sessionId = sesssionStorage.getItem("desicrafts_session_id");
+  if (!sessionId) {
+    sessionId = crypto.randomUUID();
+    sessionStorage.setItem("desicrafts_session-id", sessionId);
+  }
+  return sessionId;
+};
+
 export default function ProductDetail() {
   const { id } = useParams();
   const { addToCart } = useCart();
